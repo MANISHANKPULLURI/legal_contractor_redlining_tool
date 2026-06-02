@@ -1,0 +1,85 @@
+# ======================
+# ENV / SECRETS
+# ======================
+
+.env
+.env.*
+!.env.example
+
+
+# ======================
+# PYTHON
+# ======================
+
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+.pytest_cache/
+.mypy_cache/
+
+venv/
+env/
+.venv/
+
+
+# ======================
+# MAC
+# ======================
+
+.DS_Store
+
+
+# ======================
+# NEXT JS
+# ======================
+
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+
+frontend/.env
+frontend/.env.local
+
+
+# ======================
+# QDRANT LOCAL DATABASE
+# ======================
+
+qdrant_db/
+
+
+# ======================
+# GENERATED CONTRACT FILES
+# ======================
+
+*.docx
+
+redlined_contract.docx
+sample_contract_redlined.docx
+
+temp/
+
+
+# ======================
+# LOCAL TEST FILES
+# ======================
+
+sample_contract.pdf
+structure.txt
+
+
+# ======================
+# LOGS
+# ======================
+
+*.log
+
+
+# ======================
+# IDE
+# ======================
+
+.vscode/
+.idea/
