@@ -1,8 +1,6 @@
 from collections import defaultdict
 
 
-# temporary in-memory storage
-# later replace with Redis/PostgreSQL
 
 sessions = defaultdict(list)
 

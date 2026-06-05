@@ -9,6 +9,7 @@ from backend.memory.chat_memory import (
 )
 
 
+
 agent_app = build_graph()
 
 
@@ -20,13 +21,15 @@ def handle_request(
 ):
 
 
-    # Load previous chat
+    # -------------------------
+    # Load memory
+    # -------------------------
 
-    history = get_history(session_id)
+    history = get_history(
+        session_id
+    )
 
 
-
-    # Save user message
 
     add_message(
         session_id,
@@ -36,9 +39,12 @@ def handle_request(
 
 
 
-    # --------------------------------
-    # File uploaded → Agentic RAG
-    # --------------------------------
+
+
+
+    # ===================================
+    # FILE UPLOAD → AGENTIC CONTRACT RAG
+    # ===================================
 
 
     if document_text:
@@ -47,31 +53,39 @@ def handle_request(
         initial_state = {
 
 
-            "user_query": user_query,
+            "user_query":
+            user_query,
 
 
-            "document_text": document_text,
+            "document_text":
+            document_text,
 
 
-            "chat_history": history,
+            "chat_history":
+            history,
 
 
-            "clauses": [],
+            "clauses":
+            [],
 
 
-            "retrieved_context": {},
+            "retrieved_context":
+            {},
 
 
-            "risks": [],
+            "risks":
+            [],
 
 
-            "rewrites": [],
+            "rewrites":
+            [],
 
 
-            "final_report": {}
-
+            "final_report":
+            {}
 
         }
+
 
 
 
@@ -83,14 +97,24 @@ def handle_request(
 
 
 
-        final_report = result["final_report"]
+
+        final_report = result[
+
+            "final_report"
+
+        ]
+
 
 
 
         add_message(
+
             session_id,
+
             "assistant",
+
             str(final_report)
+
         )
 
 
@@ -103,9 +127,9 @@ def handle_request(
 
 
 
-    # --------------------------------
-    # Text only → Smart Router + Memory
-    # --------------------------------
+    # ===================================
+    # TEXT CHAT ROUTER
+    # ===================================
 
 
     query = user_query.lower().strip()
@@ -113,33 +137,29 @@ def handle_request(
 
 
 
-    question_keywords = [
 
-        "what",
+    review_keywords = [
 
-        "why",
 
-        "how",
+        "review this clause",
 
-        "explain",
+        "analyze this clause",
 
-        "tell",
+        "analyse this clause",
 
-        "define",
+        "check this clause",
 
-        "describe",
+        "find risk in this clause",
 
-        "meaning",
+        "find risks in this clause",
 
-        "difference",
+        "rewrite this clause",
 
-        "can",
+        "improve this clause",
 
-        "should",
+        "fix this clause",
 
-        "is",
-
-        "are"
+        "make this clause safer"
 
     ]
 
@@ -147,19 +167,15 @@ def handle_request(
 
 
 
-    is_question = (
 
-        query.endswith("?")
+    is_review_request = any(
 
-        or
 
-        any(
+        keyword in query
 
-            word in query.split()
 
-            for word in question_keywords
+        for keyword in review_keywords
 
-        )
 
     )
 
@@ -167,7 +183,11 @@ def handle_request(
 
 
 
-    # Add memory context
+
+
+
+    # Add conversation memory
+
 
     memory_query = f"""
 
@@ -176,10 +196,10 @@ Previous conversation:
 {history}
 
 
+
 Current user request:
 
 {user_query}
-
 
 """
 
@@ -188,25 +208,15 @@ Current user request:
 
 
 
-    # Legal Q&A RAG
 
-    if is_question:
-
-
-        response = answer_question(
-
-            memory_query
-
-        )
+    # --------------------------
+    # Clause review only
+    # when explicitly requested
+    # --------------------------
 
 
+    if is_review_request:
 
-
-
-
-    # Clause Review RAG
-
-    else:
 
 
         response = review_clause(
@@ -220,8 +230,28 @@ Current user request:
 
 
 
+    # --------------------------
+    # Default:
+    # Normal Legal RAG
+    # --------------------------
 
-    # Save AI response
+
+    else:
+
+
+
+        response = answer_question(
+
+            memory_query
+
+        )
+
+
+
+
+
+
+
 
 
     add_message(
@@ -233,6 +263,7 @@ Current user request:
         str(response)
 
     )
+
 
 
 

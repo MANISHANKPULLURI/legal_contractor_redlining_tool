@@ -299,9 +299,7 @@ Return ONLY valid JSON list.
 
 
 
-        # --------------------
-        # Normal response
-        # --------------------
+    
 
         if isinstance(
             batch_analysis,

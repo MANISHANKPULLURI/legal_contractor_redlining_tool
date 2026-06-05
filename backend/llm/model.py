@@ -5,12 +5,20 @@ from dotenv import load_dotenv
 import os
 
 
+from backend.llm.prompts import SYSTEM_PROMPT
+
+
+
 load_dotenv()
+
 
 
 client = Groq(
     api_key=os.getenv("GROQ_API_KEY")
 )
+
+
+
 
 
 
@@ -22,26 +30,44 @@ def generate_response(prompt):
 
         response = client.chat.completions.create(
 
+
             model="llama-3.3-70b-versatile",
 
+
             messages=[
+
                 {
                     "role": "system",
-                    "content":
-                    "You are an expert legal contract reviewer."
+                    "content": SYSTEM_PROMPT
                 },
+
+
                 {
                     "role": "user",
                     "content": prompt
                 }
+
             ],
 
+
             temperature=0.1
+
+
         )
 
 
 
-        return response.choices[0].message.content
+
+
+        return (
+            response
+            .choices[0]
+            .message
+            .content
+        )
+
+
+
 
 
 
@@ -63,6 +89,10 @@ def generate_response(prompt):
 
 
 
+
+
+
+
     except APIError as e:
 
 
@@ -76,6 +106,10 @@ def generate_response(prompt):
             "error":
             "AI service temporarily unavailable."
         }
+
+
+
+
 
 
 

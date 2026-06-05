@@ -17,9 +17,6 @@ from backend.redline.generator import create_redline_doc
 
 
 
-# -------------------------
-# Create FastAPI App
-# -------------------------
 
 app = FastAPI(
     title="LegalContractor API"
@@ -27,10 +24,6 @@ app = FastAPI(
 
 
 
-
-# -------------------------
-# CORS
-# -------------------------
 
 app.add_middleware(
 
@@ -54,10 +47,6 @@ app.add_middleware(
 
 
 
-# -------------------------
-# Request Schema
-# -------------------------
-
 class ChatRequest(BaseModel):
 
     message: str
@@ -68,9 +57,6 @@ class ChatRequest(BaseModel):
 
 
 
-# -------------------------
-# Health Check
-# -------------------------
 
 @app.get("/")
 def health_check():
@@ -88,9 +74,6 @@ def health_check():
 
 
 
-# -------------------------
-# Normal RAG Chat API
-# -------------------------
 
 @app.post("/chat")
 def chat(
@@ -125,11 +108,6 @@ def chat(
 
 
 
-
-# -------------------------
-# Agentic Contract Review API
-# File + Optional Query
-# -------------------------
 
 @app.post("/review")
 async def review_contract(
