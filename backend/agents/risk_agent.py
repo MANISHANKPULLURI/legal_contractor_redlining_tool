@@ -1,97 +1,47 @@
-from backend.review.review_chain import review_clause
+from concurrent.futures import ThreadPoolExecutor
 
+from backend.review.review_chain import review_clause
 
 
 def normalize_analysis(item):
 
     return {
-
-        "risk_level": item.get(
-            "risk_level",
-            "LOW"
-        ),
-
+        "risk_level": item.get("risk_level", "LOW"),
         "issues": item.get(
             "issues",
             [
                 {
-                    "issue": item.get(
-                        "issue",
-                        ""
-                    ),
-
-                    "why_risky": item.get(
-                        "explanation",
-                        ""
-                    )
+                    "issue": item.get("issue", ""),
+                    "why_risky": item.get("explanation", ""),
                 }
-            ]
+            ],
         ),
-
-        "explanation": item.get(
-            "explanation",
-            ""
-        ),
-
-        "recommendation": item.get(
-            "recommendation",
-            ""
-        ),
-
-        "rewritten_clause": item.get(
-            "rewritten_clause",
-            ""
-        )
-
+        "explanation": item.get("explanation", ""),
+        "recommendation": item.get("recommendation", ""),
+        "rewritten_clause": item.get("rewritten_clause", ""),
     }
 
 
-
-
-
-
 def risk_agent(state):
-
 
     clauses = state["clauses"]
 
     user_query = state["user_query"]
 
-
-    chat_history = state.get(
-        "chat_history",
-        []
-    )
-
+    chat_history = state.get("chat_history", [])
 
     risks = []
 
+    batch_size = 10
 
-    batch_size = 5
+    batch_jobs = []
 
-
-
-
-
-    for start in range(
-        0,
-        len(clauses),
-        batch_size
-    ):
-
-
-        batch = clauses[
-            start:start + batch_size
-        ]
-
+    for start in range(0, len(clauses), batch_size):
+        batch = clauses[start : start + batch_size]
 
         formatted_clauses = ""
 
-
-
         for clause in batch:
-
-
             formatted_clauses += f"""
 
 CLAUSE NUMBER: {clause["number"]}
@@ -99,11 +49,6 @@ CLAUSE NUMBER: {clause["number"]}
 {clause["text"]}
 
 """
-
-
-
-
-
 
         agent_instruction = f"""
 
@@ -224,184 +169,75 @@ Return ONLY valid JSON list.
 
 """
 
+        batch_jobs.append((batch, agent_instruction))
 
+    with ThreadPoolExecutor(max_workers=3) as executor:
+        instructions = [job[1] for job in batch_jobs]
+        batch_analyses = list(executor.map(review_clause, instructions))
 
-
-        batch_analysis = review_clause(
-            agent_instruction
-        )
-
-
-
-
-
+    for batch_idx, (batch, agent_instruction) in enumerate(batch_jobs):
+        batch_analysis = batch_analyses[batch_idx]
 
         # --------------------
         # Groq errors
         # --------------------
 
-        if (
-            isinstance(batch_analysis, dict)
-            and "error" in batch_analysis
-        ):
-
-
+        if isinstance(batch_analysis, dict) and "error" in batch_analysis:
             risks.append(
                 {
-
-                    "clause_number":
-                    batch[0]["number"],
-
-
-                    "clause":
-                    batch[0]["text"],
-
-
+                    "clause_number": batch[0]["number"],
+                    "clause": batch[0]["text"],
                     "analysis": {
-
-                        "risk_level":
-                        "ERROR",
-
-
-                        "issues":[
+                        "risk_level": "ERROR",
+                        "issues": [
                             {
-                                "issue":
-                                "LLM unavailable",
-
-                                "why_risky":
-                                batch_analysis["error"]
+                                "issue": "LLM unavailable",
+                                "why_risky": batch_analysis["error"],
                             }
                         ],
-
-
-                        "explanation":
-                        batch_analysis["error"],
-
-
-                        "recommendation":
-                        "Try again later",
-
-
-                        "rewritten_clause":
-                        ""
-
-                    }
-
+                        "explanation": batch_analysis["error"],
+                        "recommendation": "Try again later",
+                        "rewritten_clause": "",
+                    },
                 }
             )
 
-
             continue
 
-
-
-
-
-
-
-    
-
-        if isinstance(
-            batch_analysis,
-            list
-        ):
-
-
+        if isinstance(batch_analysis, list):
             for idx, clause in enumerate(batch):
-
-
                 if idx < len(batch_analysis):
-
-
                     analysis = batch_analysis[idx]
 
-
                 else:
-
-
                     # LLM skipped safe clause
                     # create fallback
 
                     analysis = {
-
-                        "risk_level":
-                        "LOW",
-
-
-                        "issues":
-                        [],
-
-
-                        "explanation":
-                        "No major legal risk identified.",
-
-
-                        "recommendation":
-                        "No changes required.",
-
-
-                        "rewritten_clause":
-                        clause["text"]
-
+                        "risk_level": "LOW",
+                        "issues": [],
+                        "explanation": "No major legal risk identified.",
+                        "recommendation": "No changes required.",
+                        "rewritten_clause": clause["text"],
                     }
-
-
-
-
-
 
                 risks.append(
                     {
-
-                        "clause_number":
-                        clause["number"],
-
-
-                        "clause":
-                        clause["text"],
-
-
-                        "analysis":
-                        normalize_analysis(
-                            analysis
-                        )
-
+                        "clause_number": clause["number"],
+                        "clause": clause["text"],
+                        "analysis": normalize_analysis(analysis),
                     }
                 )
 
-
-
-
-
-
-
         else:
-
-
             risks.append(
                 {
-
-                    "clause_number":
-                    batch[0]["number"],
-
-
-                    "clause":
-                    batch[0]["text"],
-
-
-                    "analysis":
-                    normalize_analysis(
-                        batch_analysis
-                    )
-
+                    "clause_number": batch[0]["number"],
+                    "clause": batch[0]["text"],
+                    "analysis": normalize_analysis(batch_analysis),
                 }
             )
 
-
-
-
-
     state["risks"] = risks
-
 
     return state
