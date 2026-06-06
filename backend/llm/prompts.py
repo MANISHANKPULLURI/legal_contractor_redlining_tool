@@ -48,13 +48,6 @@ Important rules:
 """
 
 
-
-
-
-
-
-
-
 # ==================================================
 # CONTRACT RISK ANALYSIS PROMPT
 # Used by Risk Agent
@@ -223,7 +216,7 @@ Return ONLY valid JSON:
 
 "explanation":"",
 
-"suggestion":"",
+"recommendation":"",
 
 "rewritten_clause":""
 }}
