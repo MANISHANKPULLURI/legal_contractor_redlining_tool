@@ -1,65 +1,51 @@
-from backend.review.review_chain import review_clause
-
+# backend/review/document_review.py
 
 import re
 
 
 def split_into_clauses(document_text):
+    """
+    Split contracts into real legal sections instead of random chunks.
+    Supports:
+    Section 1
+    Section 1.1
+    ARTICLE I
+    numbered clauses
+    """
 
+    text = document_text.strip()
+
+    # normalize spaces
+    text = re.sub(r"\n+", "\n", text)
+
+    # split before legal section headings
     parts = re.split(
-        r"\n\d+\.\s+",
-        document_text
+        r"""
+        (?=
+            (?:Section\s+\d+(?:\.\d+)?)
+            |
+            (?:ARTICLE\s+[IVXLC]+)
+            |
+            (?:^\d+\.\d+\s+)
+        )
+        """,
+        text,
+        flags=re.IGNORECASE | re.MULTILINE | re.VERBOSE,
     )
-
 
     clauses = []
 
-
     for part in parts:
-
         cleaned = part.strip()
 
+        # remove tiny useless chunks
+        if len(cleaned) > 100:
+            clauses.append(cleaned)
 
-        if len(cleaned) > 40:
+    # fallback if regex fails
+    if len(clauses) <= 1:
+        paragraphs = text.split("\n\n")
 
-            clauses.append(
-                cleaned
-            )
-
+        clauses = [p.strip() for p in paragraphs if len(p.strip()) > 100]
 
     return clauses
-
-
-def review_document(document_text):
-
-    clauses = split_into_clauses(document_text)
-
-
-    results = []
-
-
-    for index, clause in enumerate(clauses):
-
-        print(
-            f"Reviewing clause {index+1}/{len(clauses)}"
-        )
-
-
-        analysis = review_clause(
-            clause
-        )
-
-
-        results.append(
-            {
-                "clause_number": index + 1,
-                "original_clause": clause,
-                "analysis": analysis
-            }
-        )
-
-
-    return {
-        "total_clauses": len(clauses),
-        "review": results
-    }

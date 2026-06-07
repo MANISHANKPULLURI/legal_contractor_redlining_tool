@@ -1,3 +1,5 @@
+from concurrent.futures import ThreadPoolExecutor
+
 from backend.review.review_chain import review_clause
 
 
@@ -5,20 +7,18 @@ def normalize_analysis(item):
 
     return {
         "risk_level": item.get("risk_level", "LOW"),
-        "issues": item.get("issues")
-        or [
-            {
-                "issue": item.get("issue", "No major issue identified"),
-                "why_risky": item.get(
-                    "explanation", "No significant legal concern detected."
-                ),
-            }
-        ],
-        "explanation": item.get("explanation") or "No major legal risk identified.",
-        "recommendation": item.get("recommendation")
-        or "Review this clause and consider adding clearer protections, obligations, and balanced terms.",
-        "rewritten_clause": item.get("rewritten_clause")
-        or "No rewrite required for this clause.",
+        "issues": item.get(
+            "issues",
+            [
+                {
+                    "issue": item.get("issue", ""),
+                    "why_risky": item.get("explanation", ""),
+                }
+            ],
+        ),
+        "explanation": item.get("explanation", ""),
+        "recommendation": item.get("recommendation", ""),
+        "rewritten_clause": item.get("rewritten_clause", ""),
     }
 
 
@@ -32,7 +32,9 @@ def risk_agent(state):
 
     risks = []
 
-    batch_size = 5
+    batch_size = 10
+
+    batch_jobs = []
 
     for start in range(0, len(clauses), batch_size):
         batch = clauses[start : start + batch_size]
@@ -167,7 +169,14 @@ Return ONLY valid JSON list.
 
 """
 
-        batch_analysis = review_clause(agent_instruction)
+        batch_jobs.append((batch, agent_instruction))
+
+    with ThreadPoolExecutor(max_workers=3) as executor:
+        instructions = [job[1] for job in batch_jobs]
+        batch_analyses = list(executor.map(review_clause, instructions))
+
+    for batch_idx, (batch, agent_instruction) in enumerate(batch_jobs):
+        batch_analysis = batch_analyses[batch_idx]
 
         # --------------------
         # Groq errors
