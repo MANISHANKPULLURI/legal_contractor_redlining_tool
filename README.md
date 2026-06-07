@@ -1,67 +1,25 @@
 # Running Instructions
 
-## Prerequisites
-
-Before starting, ensure you have the following installed on your system:
-
-- Conda (Anaconda or Miniconda)
-- Node.js 16 or higher
-- npm or yarn package manager
-- Docker (for running Qdrant vector database)
-
-## Environment Setup
-
-1. Clone the repository and navigate to the project root:
-
-   ```
-   cd legal_contractor_redlining_tool
-   ```
-
-2. Create a conda environment:
-
-   ```
-   conda create -n legalcontractor python=3.10
-   conda activate legalcontractor
-   ```
-
-3. Install Python dependencies:
-
-   ```
-   pip install -r requirements.txt
-   ```
-
 ## Backend Setup
 
-1. Configure environment variables:
-
-   Create a .env file in the project root with the following variables:
-   - GROQ_API_KEY: Your Groq API key for LLM inference
-   - QDRANT_URL: URL to your Qdrant instance (default: http://localhost:6333)
-   - QDRANT_API_KEY: API key for Qdrant (if authentication is enabled)
-
-2. Start the Qdrant vector database using Docker:
+1. Run the setup script from the project root:
 
    ```
-   docker run -d -p 6333:6333 qdrant/qdrant
+   bash setup.sh
    ```
 
-   Verify Qdrant is running:
-   ```
-   curl http://localhost:6333/health
-   ```
+   This will:
+   - Create a conda environment named `legal-rag` with Python 3.11
+   - Install all Python dependencies
+   - Extract legal data from CUAD dataset
+   - Create document chunks
+   - Build the Qdrant vector database
 
-3. Initialize the knowledge base (first time setup only):
-
-   ```
-   python setup.sh
-   ```
-
-   This script processes legal documents and loads them into the Qdrant vector database for retrieval.
-
-4. Start the FastAPI backend:
+2. Activate the conda environment and start the backend:
 
    ```
-   uvicorn backend.api.main:app --reload --host 0.0.0.0 --port 8000
+   conda activate legal-rag
+   uvicorn backend.api.main:app --reload
    ```
 
    The backend API will be available at http://localhost:8000
@@ -74,20 +32,13 @@ Before starting, ensure you have the following installed on your system:
    cd frontend
    ```
 
-2. Install Node.js dependencies:
+2. Install dependencies:
 
    ```
    npm install
    ```
 
-3. Configure the backend API URL:
-
-   Create a .env.local file in the frontend directory:
-   ```
-   NEXT_PUBLIC_API_URL=http://localhost:8000
-   ```
-
-4. Start the Next.js development server:
+3. Start the development server:
 
    ```
    npm run dev
@@ -95,33 +46,14 @@ Before starting, ensure you have the following installed on your system:
 
    The frontend will be available at http://localhost:3000
 
-## Accessing the Application
+## Running the Application
 
 Once both backend and frontend are running:
 
-1. Open your browser and navigate to http://localhost:3000
-2. The application provides two main capabilities:
-   - Upload contract documents (PDF or DOCX) for AI-powered analysis
-   - Ask legal questions about contract terms
-3. Results include risk analysis, recommendations, and downloadable redlined documents
-
-## Troubleshooting
-
-Backend cannot connect to Qdrant:
-- Verify Qdrant is running by checking: curl http://localhost:6333/health
-- Check that QDRANT_URL environment variable matches your Qdrant instance location
-- Ensure the Qdrant port (6333) is accessible and not blocked by firewall
-
-Frontend cannot reach the backend:
-- Verify the backend is running at http://localhost:8000
-- Check that NEXT_PUBLIC_API_URL in frontend/.env.local is correct
-- Verify CORS settings in backend/api/main.py allow requests from localhost:3000
-- Check browser console for network errors
-
-Knowledge base not initialized:
-- Run python setup.sh from the project root directory
-- Ensure GROQ_API_KEY is set in environment variables
-- Wait for the script to complete - initial processing may take several minutes
+1. Open http://localhost:3000 in your browser
+2. Upload contract documents (PDF or DOCX) for AI-powered analysis
+3. Ask legal questions about contract terms
+4. View risk analysis, recommendations, and download redlined documents
 
 ---
 
