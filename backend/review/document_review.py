@@ -3,49 +3,150 @@
 import re
 
 
+
+
+
 def split_into_clauses(document_text):
+
+
     """
-    Split contracts into real legal sections instead of random chunks.
+    General legal contract splitter.
+
     Supports:
-    Section 1
-    Section 1.1
-    ARTICLE I
-    numbered clauses
+    - Section 1
+    - Section 1.1
+    - ARTICLE I
+    - 1. Clause Title
+    - 1.1 Clause Title
+    - 1) Clause Title
+    - CLAUSE 1
     """
+
+
 
     text = document_text.strip()
 
-    # normalize spaces
-    text = re.sub(r"\n+", "\n", text)
 
-    # split before legal section headings
+
+    # normalize line breaks
+
+    text = re.sub(
+        r"\n+",
+        "\n",
+        text
+    )
+
+
+
+
+
+
     parts = re.split(
+
         r"""
         (?=
             (?:Section\s+\d+(?:\.\d+)?)
             |
             (?:ARTICLE\s+[IVXLC]+)
             |
-            (?:^\d+\.\d+\s+)
+            (?:CLAUSE\s+\d+)
+            |
+            (?:^\d+(?:\.\d+)?[\.\)]\s+)
         )
         """,
+
+
         text,
-        flags=re.IGNORECASE | re.MULTILINE | re.VERBOSE,
+
+
+        flags=
+        re.IGNORECASE
+        |
+        re.MULTILINE
+        |
+        re.VERBOSE
+
     )
+
+
+
+
+
+
+
 
     clauses = []
 
+
+
     for part in parts:
+
+
         cleaned = part.strip()
 
-        # remove tiny useless chunks
-        if len(cleaned) > 100:
-            clauses.append(cleaned)
 
-    # fallback if regex fails
+
+        if len(cleaned) > 80:
+
+
+            clauses.append(
+                cleaned
+            )
+
+
+
+
+
+
+
+
+
+    # fallback for unusual contracts
+
     if len(clauses) <= 1:
-        paragraphs = text.split("\n\n")
 
-        clauses = [p.strip() for p in paragraphs if len(p.strip()) > 100]
+
+        parts = re.split(
+
+            r"\n(?=[A-Z][A-Z\s]{5,}:?)",
+
+            text
+
+        )
+
+
+
+        clauses = [
+
+            p.strip()
+
+            for p in parts
+
+            if len(
+                p.strip()
+            ) > 80
+
+        ]
+
+
+
+
+
+
+
+    # final fallback
+
+    if len(clauses) <= 1:
+
+
+        clauses = [
+
+            text
+
+        ]
+
+
+
+
 
     return clauses
