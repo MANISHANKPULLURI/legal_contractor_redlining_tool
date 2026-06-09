@@ -592,3 +592,114 @@ Lexo AI provides:
 - Explainable Legal Analysis
 - AI Clause Improvements
 - Lawyer-style Redlined DOCX Reports
+
+
+---
+
+# NOTE: Current Knowledge Base
+
+Lexo AI currently uses CUAD (Contract Understanding Atticus Dataset) as its legal knowledge source through Retrieval Augmented Generation (RAG).
+
+The model is not trained on CUAD. CUAD is used as an external knowledge base where relevant legal information is retrieved during contract analysis.
+
+CUAD mainly contains commercial and corporate agreements, making the current system more suitable for documents such as:
+
+- Service agreements
+- Licensing agreements
+- Business contracts
+- Corporate agreements
+
+Legal documents can vary significantly depending on country, region, and domain. For jurisdiction-specific documents such as Indian sale deeds, rental agreements, or local legal formats, additional domain-specific legal knowledge can be integrated.
+
+The architecture is designed to support expansion by adding new knowledge sources such as:
+
+- Country-specific legal documents
+- Company policies
+- Internal agreements
+- Previously reviewed contracts
+
+without redesigning the complete system.
+
+---
+
+# NOTE: Legal Placeholder Handling
+
+Lexo AI currently uses placeholder-based values during clause rewriting for sensitive legal fields such as:
+
+- Dates
+- Monetary limits
+- Percentages
+- Jurisdictions
+- Agreement-specific values
+
+The system is capable of generating specific values, but in the current version we intentionally avoid automatically assigning these details to prevent incorrect legal assumptions.
+
+For example, instead of assuming:
+
+- 30 days notice period
+- ₹10 lakh liability limit
+- Specific court jurisdiction
+
+Lexo AI provides editable placeholders such as:
+
+- [X days]
+- [agreed liability cap]
+- [applicable jurisdiction]
+
+This approach ensures that important legal and business decisions remain controlled by the user, organization, or legal professional.
+
+Future improvements can include an interactive review workflow where the system collects required information from:
+
+- User inputs
+- Organization rules
+- Company policies
+- Legal templates
+
+and automatically replaces placeholders with approved values.
+
+---
+
+# NOTE: Legal Reliability
+
+Lexo AI is designed as a legal assistance and first-level contract review platform.
+
+The objective is not to replace lawyers, but to reduce manual review effort by helping identify:
+
+- Potential risks
+- Missing protections
+- Ambiguous clauses
+- Unbalanced obligations
+- Possible improvements
+
+The AI system uses retrieved legal context along with structured reasoning, but final legal decisions should involve professional review.
+
+For production-level deployment, reliability can be improved further using:
+
+- Human-in-the-loop lawyer validation
+- Jurisdiction-specific legal databases
+- Expert-reviewed feedback
+- Continuous knowledge updates
+
+---
+
+# NOTE: Future Specialization
+
+The current version follows a generalized contract review approach to support different types of agreements.
+
+Future versions can improve accuracy by adding document-specific review agents for:
+
+- Sale deeds
+- Rental agreements
+- Employment contracts
+- NDAs
+- Service agreements
+- Other domain-specific contracts
+
+These specialized agents can perform dedicated checks based on the document type while continuing to use the existing Agentic RAG architecture.
+
+This allows Lexo AI to combine:
+
+- General contract intelligence
+- Domain-specific legal expertise
+
+for more accurate and specialized contract review.
